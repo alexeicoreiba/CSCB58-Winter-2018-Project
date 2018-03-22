@@ -1,24 +1,26 @@
-module sensor(CLOCK_50, GPIO, HEX0);
+module sensor(CLOCK_50, GPIO_0, HEX0, LEDR);
 input CLOCK_50;
-inout [35:0] GPIO;
+inout [35:0] GPIO_0;
 output [6:0] HEX0;
+output [17:0] LEDR;
 
 wire [20:0] sensor_output;
 
 usensor sensor_hex0(.distance(sensor_output),
-                    .trig(GPIO[0]),
-                    .echo(GPIO[1]),
+                    .trig(GPIO_0[0]),
+                    .echo(GPIO_0[1]),
                     .clock(CLOCK_50));
 
 hex_display display_hex0(.IN(sensor_output[3:0]),
                           .OUT(HEX0));
 
+assign LEDR[17:0] = sensor_output[17:0];								  
 endmodule
 
 module usensor(distance, trig, echo, clock);
   input clock, echo;
   output reg [20:0] distance;
-  output trig;
+  output reg trig;
 
   reg [25:0] master_timer;
   reg [25:0] trig_timer;
@@ -38,7 +40,10 @@ module usensor(distance, trig, echo, clock);
         trig <= 0;
         echo_sense <= 1;
         if (echo)
+			 begin
           echo_timer <= echo_timer + 1;
+			 distance <= echo_timer;
+			 end
         else
           begin
             echo_timer <= 0;
@@ -47,14 +52,14 @@ module usensor(distance, trig, echo, clock);
           end
       end
     else
+	 begin
       trig <= 1;
       trig_timer <= trig_timer + 1;
       master_timer <= master_timer + 1;
     end
 
-    distance <= echo_timer;
-
   end
+  
 endmodule
 
 module hex_display(IN, OUT);

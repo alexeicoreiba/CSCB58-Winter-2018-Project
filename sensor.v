@@ -1,20 +1,43 @@
-module sensor(CLOCK_50, GPIO_0, HEX0, LEDR);
+module sensor(CLOCK_50, GPIO_0, HEX0, HEX1, HEX2, LEDR);
 input CLOCK_50;
 inout [35:0] GPIO_0;
-output [6:0] HEX0;
+output [6:0] HEX0, HEX1, HEX2;
 output [17:0] LEDR;
 
 wire [20:0] sensor_output;
+wire [3:0] hundreds, tens, ones;
 
 usensor sensor_hex0(.distance(sensor_output),
                     .trig(GPIO_0[0]),
                     .echo(GPIO_0[1]),
                     .clock(CLOCK_50));
 
-hex_display display_hex0(.IN(sensor_output[3:0]),
-                          .OUT(HEX0));
+BCD bcd(
+  .binary(sensor_output[7:0]),
+  .Hundreds(hundreds),
+  .Tens(tens),
+  .Ones(ones)
+  );
 
-assign LEDR[17:0] = sensor_output[17:0];								  
+// hex_display display_hex0(.IN(sensor_output[3:0]),
+//                           .OUT(HEX0));
+
+hex_display display_hundreds(
+  .IN(hundreds),
+  .OUT(HEX2)
+  );
+
+hex_display display_tens(
+  .IN(tens),
+  .OUT(HEX1)
+  );
+
+hex_display display_ones(
+  .IN(ones),
+  .OUT(HEX0)
+  );
+
+assign LEDR[17:0] = sensor_output[17:0];
 endmodule
 
 module usensor(distance, trig, echo, clock);
@@ -52,14 +75,14 @@ module usensor(distance, trig, echo, clock);
           end
       end
     else
-	 begin
+	   begin
       trig <= 1;
       trig_timer <= trig_timer + 1;
       master_timer <= master_timer + 1;
     end
 
   end
-  
+
 endmodule
 
 module hex_display(IN, OUT);
@@ -90,4 +113,43 @@ module hex_display(IN, OUT);
 		endcase
 
 	end
+endmodule
+
+// BINARY TO BCD CONVERSION ALGORITHM
+// CODE REFERENCED FROM
+// http://www.eng.utah.edu/~nmcdonal/Tutorials/BCDTutorial/BCDConversion.html
+module BCD (
+  input [7:0] binary,
+  output reg [3:0] Hundreds,
+  output reg [3:0] Tens,
+  output reg [3:0] Ones
+  );
+
+  integer i;
+  always @(binary)
+  begin
+    //set 100's, 10's, and 1's to 0
+    Hundreds = 4'd0;
+    Tens = 4'd0;
+    Ones = 4'd0;
+
+    for (i = 7; i >=0; i = i-1)
+    begin
+      //add 3 to columns >= 5
+      if (Hundreds >= 5)
+        Hundreds = Hundreds + 3;
+      if (Tens >= 5)
+        Tens = Tens + 3;
+      if (Ones >= 5)
+        Ones = Ones + 3;
+
+      //shift left one
+      Hundreds = Hundreds << 1;
+      Hundreds[0] = Tens[3];
+      Tens = Tens << 1;
+      Tens[0] = Ones[3];
+      Ones = Ones << 1;
+      Ones[0] = binary[i];
+    end
+  end
 endmodule

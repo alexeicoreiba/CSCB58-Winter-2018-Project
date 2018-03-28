@@ -63,10 +63,10 @@ module usensor(distance, trig, echo, clock);
         trig <= 0;
         echo_sense <= 1;
         if (echo)
-			 begin
-          echo_timer <= echo_timer + 1;
-			 distance <= echo_timer;
-			 end
+			    begin
+            echo_timer <= echo_timer + 1;
+			      distance <= echo_timer;
+			    end
         else
           begin
             echo_timer <= 0;
@@ -80,9 +80,9 @@ module usensor(distance, trig, echo, clock);
       trig_timer <= trig_timer + 1;
       master_timer <= master_timer + 1;
     end
-
   end
-
+  distance >> 13;
+  distance = distance * 3;
 endmodule
 
 module hex_display(IN, OUT);

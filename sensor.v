@@ -53,7 +53,8 @@ module usensor(distance, trig, echo, clock);
   reg [25:0] echo_timer;
   reg [25:0] echo_shift10;
   reg [25:0] echo_shift12;
-  reg echo_sense;
+  reg [25:0] temp_distance;
+  reg echo_sense, echo_high;
 
   localparam  TRIG_THRESHOLD = 14'b10011100010000,
               MASTER_THRESHOLD = 26'b10111110101111000010000000;
@@ -72,15 +73,17 @@ module usensor(distance, trig, echo, clock);
         echo_sense <= 1;
         if (echo)
 			    begin
+					echo_high <= 1;
 					echo_timer <= echo_timer + 1;
-					echo_shift10 <= echo_timer >> 10;
-					echo_shift12 <= echo_timer >> 12;
-					//distance <= echo_timer;
-					distance <= (echo_shift10 - echo_shift12) >> 1;
+					//echo_shift10 <= echo_timer >> 10;
+					//echo_shift12 <= echo_timer >> 12;
+					temp_distance <= (echo_timer / 2500);
+					//distance <= (echo_shift10 - echo_shift12) >> 1;
 					//distance <= (echo_timer >> 13) * 3;
 			    end
         else
           begin
+				distance <= temp_distance;
 				echo_timer <= 0;
 				trig_timer <= 0;
 				echo_sense <= 0;

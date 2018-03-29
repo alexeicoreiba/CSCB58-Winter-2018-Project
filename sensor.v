@@ -1,6 +1,6 @@
-module sensor(CLOCK_50, GPIO_0, HEX0, HEX1, HEX2, LEDR);
+module sensor(CLOCK_50, GPIO, HEX0, HEX1, HEX2, LEDR);
 input CLOCK_50;
-inout [35:0] GPIO_0;
+inout [35:0] GPIO;
 output [6:0] HEX0, HEX1, HEX2;
 output [17:0] LEDR;
 
@@ -8,9 +8,12 @@ wire [20:0] sensor_output;
 wire [3:0] hundreds, tens, ones;
 
 usensor sensor_hex0(.distance(sensor_output),
-                    .trig(GPIO_0[0]),
-                    .echo(GPIO_0[1]),
+                    .trig(GPIO[0]),
+                    .echo(GPIO[1]),
                     .clock(CLOCK_50));
+						  
+						  
+assign LEDR[17:0] = sensor_output[17:0];
 
 BCD bcd(
   .binary(sensor_output[7:0]),
@@ -42,12 +45,14 @@ endmodule
 
 module usensor(distance, trig, echo, clock);
   input clock, echo;
-  output reg [20:0] distance;
+  output reg [25:0] distance;
   output reg trig;
 
   reg [25:0] master_timer;
   reg [25:0] trig_timer;
   reg [25:0] echo_timer;
+  reg [25:0] echo_shift10;
+  reg [25:0] echo_shift12;
   reg echo_sense;
 
   localparam  TRIG_THRESHOLD = 14'b10011100010000,
@@ -57,21 +62,28 @@ module usensor(distance, trig, echo, clock);
   always @(posedge clock)
   begin
     if (master_timer == MASTER_THRESHOLD)
+		begin
         master_timer <= 0;
+		  
+		  end
     else if (trig_timer == TRIG_THRESHOLD || echo_sense)
       begin
         trig <= 0;
         echo_sense <= 1;
         if (echo)
 			    begin
-            echo_timer <= echo_timer + 1;
-			      distance <= echo_timer;
+					echo_timer <= echo_timer + 1;
+					echo_shift10 <= echo_timer >> 10;
+					echo_shift12 <= echo_timer >> 12;
+					//distance <= echo_timer;
+					distance <= (echo_shift10 - echo_shift12) >> 1;
+					//distance <= (echo_timer >> 13) * 3;
 			    end
         else
           begin
-            echo_timer <= 0;
-            trig_timer <= 0;
-            echo_sense <= 0;
+				echo_timer <= 0;
+				trig_timer <= 0;
+				echo_sense <= 0;
           end
       end
     else
@@ -81,8 +93,6 @@ module usensor(distance, trig, echo, clock);
       master_timer <= master_timer + 1;
     end
   end
-  distance >> 13;
-  distance = distance * 3;
 endmodule
 
 module hex_display(IN, OUT);

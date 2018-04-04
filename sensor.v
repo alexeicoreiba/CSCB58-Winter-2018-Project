@@ -1,9 +1,8 @@
-module sensor(SW, CLOCK_25, CLOCK_50, GPIO_0, HEX0, HEX1, HEX2, LEDR);
+module sensor(CLOCK_25, CLOCK_50, GPIO_0, HEX0, HEX1, HEX2, LEDR);
 input CLOCK_25, CLOCK_50;
 inout [35:0] GPIO_0;
 output [6:0] HEX0, HEX1, HEX2;
 output [17:0] LEDR;
-input [17:0] SW; 
 
 wire [20:0] sensor_output;
 wire [3:0] hundreds, tens, ones;

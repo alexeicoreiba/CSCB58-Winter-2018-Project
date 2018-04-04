@@ -1,13 +1,14 @@
-module sensor(CLOCK_25, CLOCK_50, GPIO_0, HEX0, HEX1, HEX2, LEDR);
+module sensor(SW, CLOCK_25, CLOCK_50, GPIO_0, HEX0, HEX1, HEX2, LEDR);
 input CLOCK_25, CLOCK_50;
 inout [35:0] GPIO_0;
 output [6:0] HEX0, HEX1, HEX2;
 output [17:0] LEDR;
+input [17:0] SW; 
 
 wire [20:0] sensor_output;
 wire [3:0] hundreds, tens, ones;
 
-buzz lightyear(.speaker(GPIO_0[3]), 
+music buzzbuzz(.speaker(GPIO_0[3]), 
 					 .clk(CLOCK_25),
 					 .distance(sensor_output[7:0])
 );
@@ -173,10 +174,23 @@ module BCD (
   end
 endmodule
 
-// Source is http://www.fpga4fun.com/MusicBox4.html, modified ofcourse to suit our own use
+module buzzer(speaker, clk, distance);
+	input clk; 
+	input [7:0] distance; 
+	output speaker; 
+	reg clkdivider = 125000000/distance * 2056;
 
-/////////////////////////////////////////////////////////////
-module buzz(
+	reg [14:0] counter;
+	always @(posedge clk) if(counter==0) counter <= clkdivider-1; else counter <= counter-1;
+
+	reg speaker;
+	always @(posedge clk) if(counter==0) speaker <= ~speaker;
+	
+endmodule
+
+
+// Source is http://www.fpga4fun.com/MusicBox4.htmls
+module music(
 	input clk,
 	output reg speaker,
 	input [7:0] distance
@@ -185,7 +199,7 @@ module buzz(
 
 
 wire [7:0] fullnote;
-	notemux get_fullnote(.clk(clk), .address(distance[7:0]), .sound(fullnote));
+music_ROM get_fullnote(.clk(clk), .address(distance[7:0]), .note(fullnote));
 
 wire [2:0] octave;
 wire [3:0] note;
@@ -217,6 +231,7 @@ always @(posedge clk) if(counter_note==0 && counter_octave==0 && fullnote!=0 && 
 endmodule
 
 
+/////////////////////////////////////////////////////
 module divide_by12(
 	input [5:0] numerator,  // value to be divided by 12
 	output reg [2:0] quotient, 
@@ -250,14 +265,14 @@ endmodule
 /////////////////////////////////////////////////////
 
 
-module notemux(clk, distance, sound);
-	
-	input clk;
-	input [7:0] distance;
-	output reg [7:0] sound;
+module music_ROM(
+	input clk,
+	input [7:0] address,
+	output reg [7:0] note
+);
 
 always @(posedge clk)
-	case(distance)
+case(address)
 	200 :note<=8'd05;
 	199 :note<=8'd06;
 	198 :note<=8'd06;
@@ -458,6 +473,8 @@ always @(posedge clk)
 	3 :note<=8'd34;
 	2 :note<=8'd34;
 	1 :note<=8'd34;
-	default: note <= 8'd32;
+	default: note <= 8'd05;
 endcase
 endmodule
+
+/////////////////////////////////////////////////////

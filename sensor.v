@@ -29,9 +29,6 @@ BCD bcd(
   .Ones(ones)
   );
 
-// hex_display display_hex0(.IN(sensor_output[3:0]),
-//                           .OUT(HEX0));
-
 hex_display display_hundreds(
   .IN(hundreds),
   .OUT(HEX2)
@@ -189,22 +186,6 @@ module BCD (
     end
   end
 endmodule
-
-module buzzer(speaker, clk, distance);
-	input clk; 
-	input [7:0] distance; 
-	output speaker; 
-	reg clkdivider = 125000000/distance * 2056;
-
-	reg [14:0] counter;
-	always @(posedge clk) if(counter==0) counter <= clkdivider-1; else counter <= counter-1;
-
-	reg speaker;
-	always @(posedge clk) if(counter==0) speaker <= ~speaker;
-	
-endmodule
-
-
 // Source is http://www.fpga4fun.com/MusicBox4.htmls
 
 ///////////////////////////////////////////////////

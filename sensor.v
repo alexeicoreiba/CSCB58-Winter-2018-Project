@@ -1,7 +1,7 @@
-module sensor(SW, CLOCK_25, CLOCK_50, GPIO_0, HEX0, HEX1, HEX2, LEDR);
+module sensor(SW, CLOCK_25, CLOCK_50, GPIO_0, HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7, LEDR);
 input CLOCK_25, CLOCK_50;
 inout [35:0] GPIO_0;
-output [6:0] HEX0, HEX1, HEX2;
+output [6:0] HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7;
 output [17:0] LEDR;
 input [17:0] SW; 
 
@@ -10,7 +10,7 @@ wire [3:0] hundreds, tens, ones;
 
 music buzzbuzz(.speaker(GPIO_0[3]), 
 					 .clk(CLOCK_25),
-					 .distance(sensor_output[7:0])
+					 .distance(~SW[17] ? sensor_output[7:0]: 1'b0)
 );
 
 
@@ -47,6 +47,12 @@ hex_display display_ones(
   .OUT(HEX0)
   );
 
+  hex_display display_h3(.IN(4'b1010), .OUT(HEX5));
+  
+  hex_display display_h4(.IN(4'b0001), .OUT(HEX4));
+  
+  hex_display display_h5(.IN(4'b1110), .OUT(HEX3));
+  
 assign LEDR[17:0] = sensor_output[17:0];
 endmodule
 

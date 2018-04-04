@@ -1,9 +1,10 @@
-module sensor(SW, CLOCK_25, CLOCK_50, GPIO_0, HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7, LEDR);
+module sensor(SW, CLOCK_25, CLOCK_50, GPIO_0, HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7, LEDR, LEDG);
 input CLOCK_25, CLOCK_50;
 inout [35:0] GPIO_0;
 output [6:0] HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7;
 output [17:0] LEDR;
-input [17:0] SW; 
+input [17:0] SW;
+output [7:0] LEDG;
 
 wire [20:0] sensor_output;
 wire [3:0] hundreds, tens, ones;
@@ -20,7 +21,6 @@ usensor sensor_hex0(.distance(sensor_output),
                     .clock(CLOCK_50));
 						  
 						  
-assign LEDR[17:0] = sensor_output[17:0];
 
 BCD bcd(
   .binary(sensor_output[7:0]),
@@ -52,9 +52,9 @@ hex_display display_ones(
   
 	assign LEDR[17:0] = lights[25:8];
 	assign LEDG[7:0] = lights[7:0];
-		wire [25:0] lights; 
+		reg [25:0] lights; 
 	
-always @(posedge clk) 
+always @(posedge sensor_output[7:0]) 
 	case(sensor_output[7:0])
 		8'd1 :lights<=26'b10000000000000000000000000;
 		8'd2 :lights<=26'b10000000000000000000000000;
@@ -682,4 +682,3 @@ case(address)
 	default: note <= 8'd05;
 endcase
 endmodule
-

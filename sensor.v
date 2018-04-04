@@ -85,14 +85,24 @@ module usensor(distance, trig, echo, clock);
         trig <= 0;
         echo_sense <= 1;
         if (echo)
-			    begin
+			   			    begin
 					echo_high <= 1;
 					echo_timer <= echo_timer + 1;
-					//echo_shift10 <= echo_timer >> 10;
-					//echo_shift12 <= echo_timer >> 12;
+					//////////////////////////////////////////////////////
+					// CLOCK_50 -> 50 000 000 clock cycles per second
+					// let n = number of cycles
+					// speed of sound in air: 340m/s
+					// n / 50 000 000 = num of seconds
+					// num of seconds * 340m/s = meters
+					// meters * 100 = cm ~ distance to object and back
+					// So we divide by 2 to get distance to object
+					// 1/ 50 000 000 * 340 * 100 / 2 = 0.00034
+					// n * 0.00034 = n * 34/100 000 = n / (100 000/34)
+					// = 2941
+					// To make up for sensor inaccuracy and simple math
+					// we round down to 2900
 					temp_distance <= (echo_timer / 2900);
-					//distance <= (echo_shift10 - echo_shift12) >> 1;
-					//distance <= (echo_timer >> 13) * 3;
+					//////////////////////////////////////////////////////
 			    end
         else
           begin
@@ -196,6 +206,8 @@ endmodule
 
 
 // Source is http://www.fpga4fun.com/MusicBox4.htmls
+
+///////////////////////////////////////////////////
 module music(
 	input clk,
 	output reg speaker,
@@ -237,7 +249,7 @@ always @(posedge clk) if(counter_note==0 && counter_octave==0 && fullnote!=0 && 
 endmodule
 
 
-/////////////////////////////////////////////////////
+
 module divide_by12(
 	input [5:0] numerator,  // value to be divided by 12
 	output reg [2:0] quotient, 

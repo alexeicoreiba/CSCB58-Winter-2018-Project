@@ -201,7 +201,7 @@ module music(
 
 
 wire [7:0] fullnote;
-notemux get_fullnote(.clk(clk), .address(distance[7:0]), .note(fullnote));
+	notemux get_fullnote(.clk(clk), .address(distance[7:0]), .sound(fullnote));
 
 wire [2:0] octave;
 wire [3:0] note;

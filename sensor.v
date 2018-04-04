@@ -8,7 +8,7 @@ input [17:0] SW;
 wire [20:0] sensor_output;
 wire [3:0] hundreds, tens, ones;
 
-music buzzbuzz(.speaker(GPIO_0[3]), 
+buzz lightyear(.speaker(GPIO_0[3]), 
 					 .clk(CLOCK_25),
 					 .distance(sensor_output[7:0])
 );
@@ -174,25 +174,10 @@ module BCD (
   end
 endmodule
 
-module buzzer(speaker, clk, distance);
-	input clk; 
-	input [7:0] distance; 
-	output speaker; 
-	reg clkdivider = 125000000/distance * 2056;
-
-	reg [14:0] counter;
-	always @(posedge clk) if(counter==0) counter <= clkdivider-1; else counter <= counter-1;
-
-	reg speaker;
-	always @(posedge clk) if(counter==0) speaker <= ~speaker;
-	
-endmodule
-
-
 // Source is http://www.fpga4fun.com/MusicBox4.html, modified ofcourse to suit our own use
 
 /////////////////////////////////////////////////////////////
-module music(
+module buzz(
 	input clk,
 	output reg speaker,
 	input [7:0] distance

@@ -189,7 +189,9 @@ module buzzer(speaker, clk, distance);
 endmodule
 
 
-// Source is http://www.fpga4fun.com/MusicBox4.html
+// Source is http://www.fpga4fun.com/MusicBox4.html, modified ofcourse to suit our own use
+
+/////////////////////////////////////////////////////////////
 module music(
 	input clk,
 	output reg speaker,
@@ -199,7 +201,7 @@ module music(
 
 
 wire [7:0] fullnote;
-music_ROM get_fullnote(.clk(clk), .address(distance[7:0]), .note(fullnote));
+notemux get_fullnote(.clk(clk), .address(distance[7:0]), .note(fullnote));
 
 wire [2:0] octave;
 wire [3:0] note;
@@ -231,7 +233,6 @@ always @(posedge clk) if(counter_note==0 && counter_octave==0 && fullnote!=0 && 
 endmodule
 
 
-/////////////////////////////////////////////////////
 module divide_by12(
 	input [5:0] numerator,  // value to be divided by 12
 	output reg [2:0] quotient, 
@@ -265,14 +266,14 @@ endmodule
 /////////////////////////////////////////////////////
 
 
-module music_ROM(
+module notemux(clk, distance, note);
+	
 	input clk,
-	input [7:0] address,
+	input [7:0] distance,
 	output reg [7:0] note
-);
 
 always @(posedge clk)
-case(address)
+	case(distance)
 	  0: note<= 8'd10;
 	  1: note<= 8'd10;
 	  2: note<= 8'd10;
@@ -385,5 +386,3 @@ case(address)
 	default: note <= 8'd32;
 endcase
 endmodule
-
-/////////////////////////////////////////////////////
